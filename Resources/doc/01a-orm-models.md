@@ -20,6 +20,9 @@ fos_message:
 
 [Continue with the installation][]
 
+Annotations version
+=================================
+
 Message class
 -------------
 
@@ -205,5 +208,216 @@ class ThreadMetadata extends BaseThreadMetadata
     protected $participant;
 }
 ```
+XML Version
+=================================
 
+Message class
+-------------
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity repository-class="AppBundle\Repository\MessageRepository" name="AppBundle\Entity\Message">
+    <id name="id" type="integer" column="id">
+      <generator strategy="AUTO"/>
+    </id>
+    <many-to-one field="thread" target-entity="AppBundle\Entity\Thread" inversed-by="messages"/>
+    <many-to-one field="sender" target-entity="AppBundle\Entity\User" />
+    <one-to-many field="metadata" target-entity="AppBundle\Entity\MessageMetadata" mapped-by="message">
+        <cascade>
+            <all/>
+        </cascade>
+    </one-to-many>
+  </entity>
+</doctrine-mapping>
+```
+
+```php
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\Common\Collections\Collection;
+use FOS\MessageBundle\Entity\Message as BaseMessage;
+
+/**
+ * Message
+ */
+class Message extends BaseMessage
+{
+    /**
+     * @var integer
+     */
+    protected $id;
+
+    /**
+     * @var MessageMetadata[]|Collection
+     */
+    protected $metadata;
+
+    /**
+     * @var \FOS\MessageBundle\Model\ThreadInterface
+     */
+    protected $thread;
+
+    /**
+     * @var \FOS\MessageBundle\Model\ParticipantInterface
+     * 
+     */
+    protected $sender;
+
+}
+
+```
+
+
+MessageMetadata class
+---------------------
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity repository-class="AppBundle\Repository\MessageMetadataRepository" name="AppBundle\Entity\MessageMetadata">
+    <id name="id" type="integer" column="id">
+      <generator strategy="AUTO"/>
+    </id>
+    <many-to-one field="message" target-entity="AppBundle\Entity\Message" inversed-by="metadata"/>
+    <many-to-one field="participant" target-entity="AppBundle\Entity\User" />
+  </entity>
+</doctrine-mapping>
+```
+
+```php
+<?php
+
+namespace AppBundle\Entity;
+
+use FOS\MessageBundle\Entity\MessageMetadata as BaseMessageMetadata;
+
+/**
+ * MessageMetadata
+ */
+class MessageMetadata extends BaseMessageMetadata
+{
+    /**
+     * @var integer
+     */
+    protected $id;
+
+    /**
+     * @var \FOS\MessageBundle\Model\MessageInterface
+     */
+    protected $message;
+
+    /**
+     * @var \FOS\MessageBundle\Model\ParticipantInterface
+     */
+    protected $participant;
+
+}
+```
+
+Thread class
+------------
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity repository-class="AppBundle\Repository\ThreadRepository" name="AppBundle\Entity\Thread">
+    <id name="id" type="integer" column="id">
+      <generator strategy="AUTO"/>
+    </id>    
+    <many-to-one field="createdBy" target-entity="AppBundle\Entity\User" />
+    <one-to-many field="messages" target-entity="AppBundle\Entity\Message" mapped-by="thread"/>
+    <one-to-many field="metadata" target-entity="AppBundle\Entity\ThreadMetadata" mapped-by="thread">
+        <cascade>
+            <all/>
+        </cascade>
+    </one-to-many>
+  </entity>
+</doctrine-mapping>
+```
+
+```php
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\Common\Collections\Collection;
+use FOS\MessageBundle\Entity\Thread as BaseThread;
+
+/**
+ * Thread
+ */
+class Thread extends BaseThread
+{
+    /**
+     * @var integer
+     */
+    protected $id;
+
+    /**
+     * @var Message[]|Collection
+     */
+    protected $messages;
+
+    /**
+     * @var ThreadMetadata[]|Collection
+     */
+    protected $metadata;
+
+    /**
+     * @var \FOS\MessageBundle\Model\ParticipantInterface
+     */
+    protected $createdBy;
+
+}
+```
+ThreadMetadata class
+--------------------
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity repository-class="AppBundle\Repository\ThreadMetadataRepository" name="AppBundle\Entity\ThreadMetadata">
+    <id name="id" type="integer" column="id">
+      <generator strategy="AUTO"/>
+    </id>
+    <many-to-one field="thread" target-entity="AppBundle\Entity\Thread" inversed-by="metadata"/>
+    <many-to-one field="participant" target-entity="AppBundle\Entity\User" />
+  </entity>
+</doctrine-mapping>
+
+```
+
+```php
+<?php
+
+namespace AppBundle\Entity;
+
+use FOS\MessageBundle\Entity\ThreadMetadata as BaseThreadMetadata;
+
+/**
+ * ThreadMetadata
+ */
+class ThreadMetadata extends BaseThreadMetadata
+{
+    /**
+     * @var integer
+     */
+    protected $id;
+
+    /**
+     * @var \FOS\MessageBundle\Model\ThreadInterface
+     */
+    protected $thread;
+
+    /**
+     * @var \FOS\MessageBundle\Model\ParticipantInterface
+     */
+    protected $participant;
+
+}
+
+```
 [Continue with the installation]: 01-installation.md
